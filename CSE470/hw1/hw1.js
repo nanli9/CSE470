@@ -126,13 +126,13 @@ function render() {
 	for(i=0;i<10;i++)
 	{
 		gl.uniform4f(offsetLoc, radius*Math.cos(angle*i),radius*Math.sin(angle*i),0,0);
-		gl.drawArrays( gl.TRIANGLE_FAN, 0, 23); 
+		gl.drawArrays( gl.TRIANGLE_FAN, 0, 22); 
 	}
 
 	gl.uniform4f(offsetLoc,0,0,0,0)
 	alpha -= deltaRadians;
 	gl.uniform1f(thetaLoc, alpha);
-	gl.drawArrays( gl.TRIANGLE_FAN, 0, 23); 
+	gl.drawArrays( gl.TRIANGLE_FAN, 0, 22); 
 	requestAnimFrame(render);
 	
 }
