@@ -1,0 +1,54 @@
+<html>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+    attribute  vec4 vPosition;
+    attribute  vec4 vColor;
+    varying vec4 fColor;
+    
+    uniform mat4 modelView;
+     
+    
+    void main() 
+    {
+        
+        gl_Position = modelView*vPosition;
+        fColor = vColor;
+        if(gl_Position.x>0.8){
+            fColor.w = 1.0-gl_Position.x;
+        }
+        
+    } 
+    </script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+precision mediump float;
+   
+varying vec4 fColor;
+
+void
+main()
+{
+    gl_FragColor = fColor;
+}
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="CreateCube.js"></script>
+
+<body>
+<canvas id="gl-canvas" width="512" height="512" style="border:2px solid #000000;">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+   
+<br/>
+<label for="scale">scale: </label>
+<input type="range" min="0.1" max="1" step="0.1" value="0.3" id="scale"/>
+<label for="KFT">KFT:</label>
+<input type="range" min="0" max="1" step="0.1" value="0.5" id="KFT"/>
+
+</body>
+</html>
