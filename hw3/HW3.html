@@ -156,19 +156,8 @@ Oops ... your browser doesn't support the HTML5 canvas element
 <div>
 program description:
 <ul>
-<li>Lighting calculation done in fragment shader </li>
-<li>(L, N, E sent as varying: interpolated over triangle </li>
-<li>Sphere centered at origin with radius 1</li>
-<li>True normals calculated from vertices (special property of sphere)</li>
-<li>Orthographic projection</li>
-<li>Modelview matrix consists of LookAt transformations</li>
-<li>Eye location calculated from spherical coordinates based on R, theta, phi input </li>
-<li>(Initialize Eye on z axis) </li>
-<li>Light located at [1,1,1] wrt eye coordinates (defined in js)</li>
-
-<li>Careful with too many subdivisions -- really slows it down </li>
-<li>See sphere generation code to close up sphere; open demos front/back face triangle concept </li>
-<li>Inspector / Console for more output </li>
+<li>The light location is at eye(0,0,3) or (10,10,3)</li>
+<li>Change the surface type will reset the animation toggle and projection type to default(ortho)</li>
 </ul>
 </div>
 </body>
