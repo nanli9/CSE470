@@ -15,10 +15,12 @@ attribute vec3 vNormal;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec4 lightPosition;
+uniform mat4 normalMatrix;
 
 varying vec3 N;
 varying vec3 L;
 varying vec3 E;
+uniform int colorFlag;
 
 void main()
 {
@@ -46,7 +48,7 @@ void main()
    
    // map normal into eye coordinates
    // normal matrix should not be needed here bc it is a rotation and translation (rigid body)
-    N = normalize( (modelViewMatrix * nor4D).xyz); 
+    N = normalize( (normalMatrix * nor4D).xyz); 
     
 	// output point in clip coordinates
     gl_Position = projectionMatrix * modelViewMatrix * pos4D;
@@ -67,6 +69,7 @@ uniform vec4 ambientProduct;
 uniform vec4 diffuseProduct;
 uniform vec4 specularProduct;
 uniform float shininess;
+uniform int colorFlag;
 varying vec3 N;
 varying vec3 L;
 varying vec3 E;
@@ -77,37 +80,40 @@ void main()
 	
 	// normalize the input vectors that have been
 	// interpolated across the triangle
-	
-	vec3 unitN = normalize(N);
-	vec3 unitL = normalize(L);
-	vec3 unitE = normalize(E);
-	
-	// halfway vector (instead of reflection vector)
-	vec3 H = normalize( unitL + unitE );
-	
-	vec4 ambient = ambientProduct;
+	if(colorFlag == 1) {
+		vec3 unitN = normalize(N);
+		vec3 unitL = normalize(L);
+		vec3 unitE = normalize(E);
+		
+		// halfway vector (instead of reflection vector)
+		vec3 H = normalize( unitL + unitE );
+		
+		vec4 ambient = ambientProduct;
 
-	// diffuse attenuation (Lambert's law)
-	float LNdotProduct = dot(unitL, unitN);
-	float Kd = max( LNdotProduct, 0.0 );
-	vec4  diffuse = Kd*diffuseProduct;
+		// diffuse attenuation (Lambert's law)
+		float LNdotProduct = dot(unitL, unitN);
+		float Kd = max( LNdotProduct, 0.0 );
+		vec4  diffuse = Kd*diffuseProduct;
 
-	// specular attenuation
-	float Ks = pow( max(dot(unitN, H), 0.0), shininess );
-	vec4  specular = Ks * specularProduct;
-	
-	// turn off specular if there is no diffuse
-	 
-	if( LNdotProduct < 0.0 ) 
-		specular = vec4(0.0, 0.0, 0.0, 1.0);
-		 
-	// create working color 
-	// so we can play before loading into fColor
-	vec4 finalColor = ambient + diffuse + specular;
-	
-	fColor = finalColor;
-	fColor.a = 1.0;
-	 
+		// specular attenuation
+		float Ks = pow( max(dot(unitN, H), 0.0), shininess );
+		vec4  specular = Ks * specularProduct;
+		
+		// turn off specular if there is no diffuse
+		
+		if( LNdotProduct < 0.0 ) 
+			specular = vec4(0.0, 0.0, 0.0, 1.0);
+			
+		// create working color 
+		// so we can play before loading into fColor
+		vec4 finalColor = ambient + diffuse + specular;
+		
+		fColor = finalColor;
+		fColor.a = 1.0;
+	}
+	else {	
+		fColor = vec4(1.0, 0.0, 0.0, 1.0);
+	}
 
     gl_FragColor = fColor;
 }
@@ -144,7 +150,7 @@ Oops ... your browser doesn't support the HTML5 canvas element
 	</select>
 	<select id="lightLocSelector">
 		<option value="eye">eye(0,0,3)</option>
-		<option value="otherPos">(10,10,3)</option>
+		<option value="otherPos">(-0.7,-0.7,2.0)</option>
 	</select>
 </div>
 <div>
@@ -157,8 +163,8 @@ Oops ... your browser doesn't support the HTML5 canvas element
 	
 program description:
 <ul>
-<li>The light location is at eye(0,0,3) or (10,10,3)</li>
-<li>Change the surface type will reset the animation toggle and projection type to default(ortho)</li>
+<li>The light location is at eye(0,0,3) or (-0.7,-0.7, 2.0)</li>
+<li>Change the surface type and light position will reset the animation toggle and projection type to default(ortho) and set surface to the origin</li>
 <li>The init moveVector is a normalized random vec3, please refresh the page if you want to change the init moveVector</li>
 <li>The moveVector will change eveytime the surface hit the boundary of the box</li>
 <li id="moveVector">The current moveVector is .</li>

@@ -2,7 +2,7 @@
 
 var canvas;
 var gl;
-
+var program;
 // sphere definition
 var numTimesToSubdivide = 4;
 var numVertices = 0;
@@ -11,6 +11,7 @@ var pointsArray = [];
 var normalsArray = [];
 var indexPoints=[];
 var indexNormals=[];
+
 // eye location and parameters to move
 var viewer = 
 {
@@ -29,7 +30,7 @@ var animation;
 var kft = 0.0;
 var stepsize = 0.005;
 var pos=vec3(0,0,0);
-var moveVector;
+var moveVector = normalize(vec3(Math.random(),Math.random(),Math.random()));;
 var speed = 0.005;
 
 var animationToggle=false;
@@ -92,9 +93,11 @@ var materialShininess = 10.0;
 */
 
 var ambientColor, diffuseColor, specularColor;
-
+//matrix 
 var modelViewMatrix, projectionMatrix;
 var modelViewMatrixLoc, projectionMatrixLoc;
+var scaleMatrix=mat4();
+var normalMat, normalMatrixLoc;
 
 //define the min and max box
 var Box=[
@@ -109,8 +112,10 @@ var Box=[
 ]
 //push the box into point array to draw
 function drawBox(){
-    for(var i=0;i<Box.length;i++)
+    for(var i=0;i<Box.length;i++){
         pointsArray.push(Box[i]);
+        normalsArray.push(vec3(0,0,0));
+    }
     quad(0,1,2,3);
     quad(2,6,5,1);
     quad(0,4,7,3);
@@ -124,6 +129,11 @@ function quad(a,b,c,d){
     pointsArray.push(Box[c]);
     pointsArray.push(Box[d]);
     pointsArray.push(Box[a]);
+    normalsArray.push(vec3(0,0,0));
+    normalsArray.push(vec3(0,0,0));
+    normalsArray.push(vec3(0,0,0));
+    normalsArray.push(vec3(0,0,0));
+    normalsArray.push(vec3(0,0,0));
 }
 
 // ==================== run program
@@ -142,7 +152,7 @@ window.onload = function init() {
     //
     //  Load shaders and initialize attribute buffers
     //
-    var program = initShaders( gl, "vertex-shader", "fragment-shader" );
+    program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
     
 
@@ -152,7 +162,7 @@ window.onload = function init() {
 	
 	console.log("ambient product = ",ambientProduct);
     
-    moveVector = normalize(vec3(Math.random(),Math.random(),Math.random()));
+    
     console.log("moveVector", moveVector);
     document.getElementById("moveVector").innerHTML = "The current moveVector is ("+ moveVector +")";
     var surfacesType = document.getElementById("surfaceSelector").value;
@@ -166,6 +176,15 @@ window.onload = function init() {
     }
     
     drawBox();
+    var lightLoc=document.getElementById("lightLocSelector").value;
+    if(lightLoc=="eye"){
+        lightPosition = vec4(0.0, 0.0, 3.0, 1.0 );
+        pointsArray.push(vec3(0.0, 0.0, 3.0));
+    }
+    else if(lightLoc=="otherPos"){
+        lightPosition = vec4(-0.7, -0.7, 2.0, 1.0 );
+        pointsArray.push(vec3(-0.7, -0.7, 2.0));
+    }
 
     var nBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer);
@@ -190,6 +209,7 @@ window.onload = function init() {
     gl.enableVertexAttribArray(vPosition);
     
     modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
+    normalMatrixLoc = gl.getUniformLocation( program, "normalMatrix" );
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
 
     // define mouse event listeners
@@ -262,19 +282,14 @@ window.onload = function init() {
         init();
     };
     document.getElementById("lightLocSelector").onchange = function(){
-        console.log(document.getElementById("lightLocSelector").value);
-        var lightLoc=document.getElementById("lightLocSelector").value;
-        if(lightLoc=="eye"){
-            lightPosition = vec4(0.0, 0.0, 3.0, 1.0 );
-            gl.uniform4fv( gl.getUniformLocation(program, "lightPosition"),flatten(lightPosition) );
-        }
-        else if(lightLoc=="otherPos"){
-            lightPosition = vec4(10.0, 10.0, 3.0, 1.0 );
-            gl.uniform4fv( gl.getUniformLocation(program, 
-                "lightPosition"),flatten(lightPosition) );
-        }
+        numVertices = 0;
+        numPoints = 0;
+        pointsArray = []; 
+		normalsArray = [];
+        init();
     };
     
+
     gl.uniform4fv( gl.getUniformLocation(program, 
        "ambientProduct"),flatten(ambientProduct) );
     gl.uniform4fv( gl.getUniformLocation(program, 
@@ -302,12 +317,21 @@ function render() {
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
     modelViewMatrix = lookAt(viewer.eye, viewer.at, viewer.up);
+    
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+
+    gl.uniform1i(gl.getUniformLocation(program,"colorFlag"), 0);
+    gl.drawArrays( gl.POINTS, pointsArray.length-1, 1 );
+
+    gl.uniform1i(gl.getUniformLocation(program,"colorFlag"), 1);
+    normalMat = modelViewMatrix;
+	
+	gl.uniformMatrix4fv(normalMatrixLoc, false, flatten(normalMat) );
     for( var i=numPoints; i<numPoints+8; i++){
         gl.drawArrays( gl.POINTS, i, 1 );
     }
     //gl.drawArrays( gl.LINES, numVertices, 2 );
-    for( var i=numPoints+8; i<pointsArray.length; i+=5){
+    for( var i=numPoints+8; i<pointsArray.length-1; i+=5){
         gl.drawArrays( gl.LINES, i, 2 );
         gl.drawArrays( gl.LINES, i+1, 2 );
         gl.drawArrays( gl.LINES, i+2, 2 );
@@ -317,6 +341,7 @@ function render() {
     if(kft>1){
         kft=0;
         modelViewMatrix = mult(modelViewMatrix,translate(pos[0],pos[1],pos[2]));
+        modelViewMatrix = mult(modelViewMatrix,scaleMatrix);
     }
     else{
         kft+=stepsize;
@@ -324,6 +349,14 @@ function render() {
         pos[1] += speed*moveVector[1];
         pos[2] += speed*moveVector[2];
         modelViewMatrix = mult(modelViewMatrix,translate(pos[0],pos[1],pos[2]));
+        modelViewMatrix = mult(modelViewMatrix,scaleMatrix);
+    }
+
+    if(pos[1]-pos[0]<=0.1){
+        scaleMatrix=scalem(0.6,0.5,2);
+    }
+    else{
+        scaleMatrix=mat4();
     }
     //have reflective vectors
     if(pos[0]<=x_min){
@@ -354,13 +387,14 @@ function render() {
         
     }
     document.getElementById("moveVector").innerHTML = "The current moveVector is ("+ moveVector +")";
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
-          
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    normalMat = inverse4(modelViewMatrix);
+	
+	gl.uniformMatrix4fv(normalMatrixLoc, false, flatten(normalMat));
     //for( var i=0; i<numVertices; i=i+3) 
       //  gl.drawArrays( gl.TRIANGLES, i,3);
     gl.drawElements( gl.TRIANGLES, numVertices, gl.UNSIGNED_SHORT, 0 );
 
-    
     
 
     animation= window.requestAnimFrame(render);
