@@ -1,0 +1,58 @@
+<html>
+<P>Name: Nan Li, email: nanli9@asu.edu, asu id: 1217668959</P>
+<p>description: HW2 Spawn</p>
+<P>Resourses used: rotateCube demo and CubeTransformations demo and KFT demo</P>
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+    attribute  vec4 vPosition;
+    attribute  vec4 vColor;
+    varying vec4 fColor;
+    
+    uniform mat4 modelView;
+     
+    
+    void main() 
+    {
+        
+        gl_Position = modelView*vPosition;
+        fColor = vColor;
+        //cubes fade away outside the sphere
+        float sphere = gl_Position.x*gl_Position.x+gl_Position.y*gl_Position.y+gl_Position.z*gl_Position.z;
+        if(sphere-1.0>0.0){
+            fColor.w = 1.0-sphere;
+        }
+        
+    } 
+    </script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+precision mediump float;
+   
+varying vec4 fColor;
+
+void
+main()
+{
+    gl_FragColor = fColor;
+}
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="HW2Li.js"></script>
+
+<body>
+<canvas id="gl-canvas" width="512" height="512" style="border:2px solid #000000;">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+   
+<br/>
+<label for="scale">scale: (10% - 100%)</label>
+<input type="range" min="0.1" max="1" step="0.1" value="0.1" id="scale"/>
+<label for="KFT">KFT stepSize: (0.001 - 0.01)</label>
+<input type="range" min="0.001" max="0.003" step="0.0005" value="0.001" id="KFT"/>
+<P>Click the center cube, the animations will stop. Click then center of the cube again, the animations will resume</P>
+</body>
+</html>

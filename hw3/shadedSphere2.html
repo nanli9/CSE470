@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {font-family:verdana; line-height:150%;}
+</style>
+
+
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+attribute vec3 vPosition;
+attribute vec3 vNormal;
+
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform vec4 lightPosition;
+
+varying vec3 N;
+varying vec3 L;
+varying vec3 E;
+
+void main()
+{
+	gl_PointSize = 10.0;
+
+	// make inputs 4d to match 4x4 transformation matrix
+	vec4 pos4D = vec4(vPosition, 1.0);
+	vec4 nor4D = vec4(vNormal, 0.0); 
+	
+	// map position into eye coordinates
+	vec3 pos = (modelViewMatrix * pos4D).xyz;
+	
+	// light defined  in eye coordinates
+    vec3 light = lightPosition.xyz;
+	
+	// light vector
+    L = normalize( light - pos );
+	
+	// eye in eye coordinates
+	vec3 eyePoint = vec3(0.0, 0.0, 0.0);
+	
+	// view vector
+	// this was an error - redeclaring E, so not varying
+	E = normalize( eyePoint - pos );
+   
+   // map normal into eye coordinates
+   // normal matrix should not be needed here bc it is a rotation and translation (rigid body)
+    N = normalize( (modelViewMatrix * nor4D).xyz); 
+    
+	// output point in clip coordinates
+    gl_Position = projectionMatrix * modelViewMatrix * pos4D;
+	
+    
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+/* 
+Fun to try -- see shadedsphere2_Play
+*/
+
+precision mediump float;
+
+uniform vec4 ambientProduct;
+uniform vec4 diffuseProduct;
+uniform vec4 specularProduct;
+uniform float shininess;
+varying vec3 N;
+varying vec3 L;
+varying vec3 E;
+
+void main()
+{    
+    vec4 fColor;
+	
+	// normalize the input vectors that have been
+	// interpolated across the triangle
+	
+	vec3 unitN = normalize(N);
+	vec3 unitL = normalize(L);
+	vec3 unitE = normalize(E);
+	
+	// halfway vector (instead of reflection vector)
+	vec3 H = normalize( unitL + unitE );
+	
+	vec4 ambient = ambientProduct;
+
+	// diffuse attenuation (Lambert's law)
+	float LNdotProduct = dot(unitL, unitN);
+	float Kd = max( LNdotProduct, 0.0 );
+	vec4  diffuse = Kd*diffuseProduct;
+
+	// specular attenuation
+	float Ks = pow( max(dot(unitN, H), 0.0), shininess );
+	vec4  specular = Ks * specularProduct;
+	
+	// turn off specular if there is no diffuse
+	 
+	if( LNdotProduct < 0.0 ) 
+		specular = vec4(0.0, 0.0, 0.0, 1.0);
+		 
+	// create working color 
+	// so we can play before loading into fColor
+	vec4 finalColor = ambient + diffuse + specular;
+	
+	fColor = finalColor;
+	fColor.a = 1.0;
+	 
+
+    gl_FragColor = fColor;
+}
+</script>
+
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="HW3.js"></script>
+<script type="text/javascript" src="mouseControl.js"></script>
+<script type="text/javascript" src="createSurface.js"></script>
+</head>
+
+<body>
+
+<canvas id="gl-canvas" width="512" height="512" style="border:2px solid #000000;">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+<h1>HW 3 Floating Surfaces</h1>
+<div>
+	<P>Name: Nan Li; Email: nanli9@asu.edu; ASU ID: 1217668959</P>
+</div>
+<div>
+	<h3>Select the dorpdown to select the properties of program</h3>
+	<select id="materialSelector">
+		<option value="emerald">emerald</option>
+		<option value="jade">jade</option>
+	</select>
+	<select id="surfaceSelector">
+		<option value="torus">torus</option>
+		<option value="cylinder">cylinder</option>
+	</select>
+	<select id="lightLocSelector">
+		<option value="eye">eye(0,0,3)</option>
+		<option value="otherPos">(10,10,3)</option>
+	</select>
+</div>
+<div>
+	<h3>Press the button to select the perspective or Orthographic</h3>
+	<button id="ortho">ortho</button>
+	<button id="perspective">perspective</button>
+	<button id="animation">animation</button>
+</div>
+<div>
+program description:
+<ul>
+<li>Lighting calculation done in fragment shader </li>
+<li>(L, N, E sent as varying: interpolated over triangle </li>
+<li>Sphere centered at origin with radius 1</li>
+<li>True normals calculated from vertices (special property of sphere)</li>
+<li>Orthographic projection</li>
+<li>Modelview matrix consists of LookAt transformations</li>
+<li>Eye location calculated from spherical coordinates based on R, theta, phi input </li>
+<li>(Initialize Eye on z axis) </li>
+<li>Light located at [1,1,1] wrt eye coordinates (defined in js)</li>
+
+<li>Careful with too many subdivisions -- really slows it down </li>
+<li>See sphere generation code to close up sphere; open demos front/back face triangle concept </li>
+<li>Inspector / Console for more output </li>
+</ul>
+</div>
+</body>
+</html>

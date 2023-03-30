@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {font-family:verdana; }
+</style>
+
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+attribute  vec4 vPosition;
+attribute  vec4 vColor;
+varying vec4 fColor;
+
+uniform mat4 modelView;
+uniform mat4 projection;
+
+void main() 
+{
+    gl_Position = projection*modelView*vPosition;
+    fColor = vColor;
+} 
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+precision mediump float;
+
+varying vec4 fColor;
+
+void
+main()
+{
+    gl_FragColor = fColor;
+}
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="ortho.js"></script>
+
+</head>
+<body>
+
+<h1> LookAt and Ortho Functions Demo</h1>
+
+<p> Input cube is one unit wide and centered at the origin.</p>
+
+<h3>LookAt input:</h3>
+<p> 
+<strong>At point </strong> is fixed as origin. <br>
+<strong>Up vector</strong> is fixed as [0, 0, 1]<br>
+<strong>Eye point </strong> is located on cylinder around cube:  radius*[sin(phi), sin(theta), cos(phi)]<br>
+<ul>
+<li>Eye moves on a circles in an xz-plane and up/down in y-coordinate.</li>
+<li>Y-coordinate movement controlled by sine function. </li>
+<li>Theta initialized to zero --> y=0, then increment 5 radians.</li>
+<li> When theta = Pi/2, Sin(Pi/2) = 1 --> y=1. </li>
+<li> When Sin(Pi/2 + 5radians) --> y-coordinate of eye decreases.</li>
+</ul>
+</p>
+<p style="background-color: yellow";>
+<span id="reportAt"></span> 
+<span id="reportUp"></span> 
+<span id="reportEye"></span>
+<br>
+<span id="reportRadius"></span>
+<span id="reportTheta"></span>
+<span id="reportPhi"></span>
+<br><br>
+<span id="reportLR"></span> 
+<span id="reportTB"></span> 
+<span id="reportNF"></span> 
+</p>
+
+Modify Ortho input:
+<button id = "Button1">Increase near/far</button>
+<button id = "Button2">Decrease near/far</button>
+ 
+<br>
+Modify LookAt eye input:<br>
+<button id = "Button3">Increase camera radius</button>
+<button id = "Button4">Decrease camera radius</button>
+ <br>
+<button id = "Button5">Increase theta</button>
+<button id = "Button6">Decrease theta</button>
+<button id = "Button7">Increase phi</button>
+<button id = "Button8">Decrease phi</button>
+<p> </p>
+</div>
+
+
+<canvas id="gl-canvas" width="512" height="512" style="border:2px solid #000000;">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+<h3> Try This</h3>
+<ul>
+<li>Increase the camera radius. If the distance is close to the far distance, then rotations of the object might cause clipping.</li>
+<li> Camera radius > far distance will cause the entire object to be clipped</li>
+<li> Increase theta and noticed change in eye y-coordinate. As theta approaches Pi/2, what happens?
+</li>
+</ul>
+
+</body>
+</html>

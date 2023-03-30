@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<style>
+    body {font-family:verdana; line-height:150%;}
+</style>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+attribute vec4 vPosition;
+
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+
+
+void
+main()
+{
+    gl_Position = projectionMatrix*modelViewMatrix*vPosition;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+precision mediump float;
+
+void
+main()
+{
+
+    gl_FragColor = vec4(0.3, 0.2, 0.8, 1.0);
+}
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="wireSphere.js"></script>
+<script type="text/javascript" src="mouseControl.js"></script>
+
+</head>
+
+<body>
+	<h1>Wireframe Sphere</h1>
+	<div>
+		<p> The sphere is generated using a subdivision method.
+		</p>
+			<strong>Input: &nbsp &nbsp</strong>4 points on the unit sphere and these points are connected to form a tetrahedron.<br>
+			The user interface allows the user to specify the number of subdivisions.
+			<br>
+			<strong>Output: &nbsp &nbsp</strong>Triangulated sphere displayed in wireframe mode using LINE_LOOP for each triangle.
+	</div>
+<br>
+<div>
+Change number of subdivisions: 
+		<button id="buttonIncreaseSubdiv">Increase</button>
+		<button id="buttonDecreaseSubdiv">Decrease</button><br>
+		<span id="numVertices"></span>&nbsp &nbsp
+		<span id="numTris"></span>
+</div>
+<br>
+
+<canvas id="gl-canvas" width="512" height="512" style="border:2px solid #000000;">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+</body>
+</html>

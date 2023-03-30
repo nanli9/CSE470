@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+
+<!-- 
+SimpleSquare Demo
+This is a simple html document with a vertex shader and a fragment shader 
+
+This program uses simpleSquare.js and MV.js in the Common folder.
+
+-->
+<!-- This is how you make a comment in HTML  -->
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+
+<!-- Create a title in the browser Tab  -->
+<title>Simple Square</title>
+
+<!-- A webGL program MUST have a vertex shader and a fragment shader -->
+
+<!-- Vertex shader written in GLSL. -->
+<!-- Notice the script tag -->
+<!-- This is a "pass through" vertex shader  -->
+<!-- Just passing the vertex to the fragment shader without calculations  -->
+   
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+// The vertex shader is called for each vertex in the vertex buffer 
+// The square vertices were sent to the GPU in the JS/webGL code
+// The square vertices are 2D coordinates (x, y)
+// check the line in the JS file with "vertexAttribPointer"
+attribute vec2 vPosition;
+ 
+void main()
+{
+	
+	//This is a comment on GLSL language
+	
+	// gl_Position is a special built-in variable
+    // It will be sent down the pipeline upon leaving this program
+    // It needs to be a 4D vector (x,y,z,w)	
+	
+    gl_Position = vec4(vPosition, 0.0, 1.0);
+	
+	// Try out errors in the shaders ... try this statment instead
+	//gl_Position = vPosition;
+	 
+	// See the class Resources page for a link to a GLSL help sheet
+
+}
+</script>
+
+
+<!-- Fragment shader written in GLSL  -->
+<!-- It is setting the color of the square  -->
+<!-- color defined by (Red, Green, Blue, 1.0)  -->
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+// must set precision
+precision mediump float;
+
+void main()
+{
+	// This is a comment in GLSL
+	// Set the color (Red, Green, Blue, Alpha) All values between [0,1]
+	// This fragment color variable is built-in variable
+	// A fragment is a potential pixel (x,y, z depth) and color
+	// potiential = it might get overwritten
+    gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
+	
+}
+</script>
+
+<!-- Here are the js files used by this program  -->
+<!-- If the Common folder not in correct place, nothing will display  --> 
+<!-- The first three files are libraries and the last one is our program -->
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="simpleSquare.js"></script>
+
+
+
+<!-- Inline CSS code to make the text prettier -->
+<style>
+body
+{
+    font-style: normal;
+    font-family: sans-serif;
+    color: #222;
+    padding: 0 1em;
+    line-height: 1.25em;
+}
+</style>
+</head>   
+
+<!-- Here is some text for the html document  -->
+<!-- Good practice: describe what the program does and any user interaction available -->
+<!-- The text can go anywhere on the page  -->
+
+<body>
+<h1> Simple Square Demo </h1>
+<h2> Get started with HTML, JavaScript, and webGL</h2>
+<p>
+!! Activate debugging in your browser with F12 and select "Console" in the debugger menu.</br>
+&nbsp; &nbsp;&nbsp; Find the print statements in the js code.
+</p>
+
+<h2>Try this:</h2>
+<ul>
+<li> Change the color of the square (see the fragment shader in simpleSquare.html)</li>
+<li> Change the shape of the square  (see simpleSquare.js)</li>
+<li> The default canvas window expects (x,y) coordinates in [-1,1] x [-1, 1]. <br>Move a vertex outside of the  canvas and see what happens. (see simpleSquare.js) </li>
+</ul>
+
+
+
+<!-- Create the window for displaying the simple square with HTML5 canvas element  -->
+<!-- Specify the size in pixels -->
+<!-- A border helps when getting started learning computer graphics -->
+
+ <canvas id="gl-canvas" width="500" height="500" style="border:2px solid #000000;"> 
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+<!-- The canvas context is an object with properties and methods that you can use to render graphics inside the canvas element. The context can be 2d or webgl (3d).
+-->
+
+<p>You can add text below the canvas too!</p>
+
+
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+
+<!-- shaded sphere 2 PLAY: 
+Phong shading with checks if vectors normalized. 
+See fragment shader for things to try.
+
+Also: in vertex shader, you can morph the sphere into 
+an ellipsoid
+-->
+<head>
+<style>
+    body {font-family:verdana; line-height:150%;}
+</style>
+
+
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+attribute vec3 vPosition;
+attribute vec3 vNormal;
+
+uniform mat4 modelViewMatrix;
+uniform mat4 normalMatrix;
+uniform mat4 projectionMatrix;
+uniform vec4 lightPosition;
+
+varying vec3 N;
+varying vec3 L;
+varying vec3 E;
+
+void main()
+{
+	// make inputs 4d to match 4x4 transformation matrix
+	vec4 pos4D = vec4(vPosition, 1.0);
+	vec4 nor4D = vec4(vNormal, 0.0); 
+	
+	// map position into eye coordinates
+	vec3 pos = (modelViewMatrix * pos4D).xyz;
+	
+	// map light into eye coordinates
+    vec3 light = lightPosition.xyz;
+	
+	// light vector
+    L = normalize( light - pos );
+	
+	// eye in eye coordinates
+	vec3 eyePoint = vec3(0.0, 0.0, 0.0);
+	
+	// view vector
+	E = normalize( eyePoint - pos );
+   
+   // map normal into eye coordinates
+   // normal matrix should not be needed 
+   // bc it is a rotation and translation (rigid body)
+   // (Using it here bc of morph to ellipsoid play)
+  
+    N = normalize( (normalMatrix * nor4D).xyz); 
+    
+	// output point in clip coordinates
+    gl_Position = projectionMatrix * modelViewMatrix * pos4D;
+	
+    
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+/* 
+Fun to try
+Do not normalize L, N and play with tolerance and number
+of subdivisions to see when triangles are large, the error
+is greater/occurs more because of large variations of the
+normals
+1) set checkUnitLength  to one value {1,2,3}
+2) set tolerance 
+tol = 0.01 is large enough to catch just some
+tol = 0.001 will show that normal close to unit length just close to vertices
+tol = 0.0001 is fun too
+3) increase/decrease subdivisions of sphere
+*/
+
+precision mediump float;
+
+uniform vec4 ambientProduct;
+uniform vec4 diffuseProduct;
+uniform vec4 specularProduct;
+uniform float shininess;
+
+varying vec3 N;
+varying vec3 L;
+varying vec3 E;
+
+void main()
+{    
+    vec4 fColor;
+	float lengthvec;
+	bool specialColor;
+	// pick some tolerance for checking values
+	float tol = 0.01;
+	
+	// normalize the input vectors that have been
+	// interpolated across the triangle
+	
+	// remove normalization on vector to play with
+	vec3 unitN = normalize(N);
+	//vec3 unitN = N;
+	vec3 unitL = normalize(L);
+	vec3 unitE = normalize(E); 
+	
+	// create a flag to check if input normals are unit length
+	// 0 = no check, 1=check normal, 2=check light, 3 = check eye
+	// color pixel unusual color if not unit length
+	int checkUnitLength = 1;
+	
+	// calculate the length of the interpolated vectors
+	// check if unit length with coloring pixel
+	if(checkUnitLength == 1) lengthvec = length(unitN);
+	if(checkUnitLength == 2) lengthvec = length(unitL);
+	if(checkUnitLength == 3) lengthvec = length(unitE);
+	
+	// check length and set flag if not unit length
+	if(checkUnitLength > 0 && abs(1.0 - lengthvec) > tol) 
+		specialColor = true;
+	else 
+		specialColor = false;
+	
+    if(specialColor) 
+		fColor = vec4(1.0, 0.0, 1.0, 1.0);
+	else {
+		// halfway vector (instead of reflection vector)
+		vec3 H = normalize( unitL + unitE );
+		vec4 ambient = ambientProduct;
+
+		// diffuse attenuation (Lambert's law)
+		float LNdotProduct = dot(unitL, unitN);
+		float Kd = max( LNdotProduct, 0.0 );
+		vec4  diffuse = Kd*diffuseProduct;
+
+		float Ks = pow( max(dot(unitN, H), 0.0), shininess );
+		vec4  specular = Ks * specularProduct;
+		
+		if( LNdotProduct < 0.0 ) 
+			specular = vec4(0.0, 0.0, 0.0, 1.0);
+		
+		fColor = ambient + diffuse + specular;
+		fColor.a = 1.0;
+	}
+
+    gl_FragColor = fColor;
+}
+</script>
+
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="shadedSphere2_play.js"></script>
+<script type="text/javascript" src="mouseControl.js"></script>
+
+</head>
+
+<body>
+
+<canvas id="gl-canvas" width="512" height="512" style="border:2px solid #000000;">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+<h1>Sphere with Phong Shading -- PLAY version</h1>
+	<div>
+		<p> The Phong illumination model is programmed in the fragment shader. 
+		Phong shading calculated at each pixel. Exact normals are used.
+		</p>
+		<p> <strong>PLAY</strong>: <br>
+		(1) Interpolated normals need normalized: see the fragment shader for instructions to play with this.
+	<br>
+		(2) If the ModelView matrix holds a transformation that is not a rigid-body transformation (determinant != 0), then a "normal matrix" needs to be applied to the normal vectors. See the render() function to see instructions for playing with this.
+		</p>
+		
+<div>
+
+<div>
+Change number of subdivisions: 
+		<button id="buttonIncreaseSubdiv">Increase</button>
+		<button id="buttonDecreaseSubdiv">Decrease</button><br>
+		<span id="numVertices"></span>&nbsp &nbsp
+		<span id="numTris"></span>
+</div>
+
+<div>
+Program Features:
+<ul>
+<li>Lighting calculation done in fragment shader </li>
+<li>(L, N, E sent as varying: interpolated over triangle </li>
+<li>Sphere centered at origin with radius 1</li>
+<li>True normals calculated from vertices (special property of sphere)</li>
+<li>Orthographic projection</li>
+<li>Modelview matrix consists of LookAt transformations</li>
+<li>Eye location calculated from spherical coordinates based on R, theta, phi input </li>
+<li>(Initialize Eye on z axis) </li>
+<li>Light located at [1,1,1] wrt eye coordinates (defined in js)</li>
+
+<li>Careful with too many subdivisions -- really slows it down </li>
+<li>See sphere generation code to close up sphere; open demos front/back face triangle concept </li>
+<li>Inspector / Console for more output </li>
+</ul>
+</div>
+</body>
+</html>

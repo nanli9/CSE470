@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+<style>
+    body {font-family:verdana; line-height:150%;}
+</style>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+attribute  vec4 vPosition;
+attribute  vec3 vNormal;
+varying    vec4 fColor;
+
+uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform vec4 lightPosition;
+uniform float shininess;
+
+void main()
+{
+
+    //compute lighting in eye coordinates
+    vec3 pos = (modelViewMatrix * vPosition).xyz;
+	
+	// light defined in eye coords, so no transformation
+    vec3 light = lightPosition.xyz;
+	// next line not what I want, but check it outline
+	// this gives the feeling we are moving around cube rather than rotating cube
+	//vec3 light = (modelViewMatrix * lightPosition).xyz;
+	
+	// light vector
+    vec3 L = normalize( light - pos );
+
+	// eye is at origin
+	vec3 eyePoint = vec3(0.0, 0.0, 0.0);
+	
+	// eye vector
+	vec3 E = normalize( eyePoint - pos );
+	
+	// halfway vector
+    vec3 H = normalize( L + E );
+    
+    vec4 NN = vec4(vNormal,0);
+
+    // Transform vertex normal into eye coordinates
+	// (Since modelview is simply translation and rotations, no need for normalMatrix)
+       
+    vec3 N = normalize( (modelViewMatrix*NN).xyz);
+
+    // Compute terms in the illumination equation
+    vec4 ambient = ambientProduct;
+
+    float Kd = max( dot(L, N), 0.0 );
+    vec4  diffuse = Kd*diffuseProduct;
+
+    float Ks = pow( max(dot(N, H), 0.0), shininess );
+    vec4  specular = Ks * specularProduct;
+    
+	// Play: try making the color red to see where this rule is applied
+    if( dot(L, N) < 0.0 ) {
+	specular = vec4(0.0, 0.0, 0.0, 1.0);
+    } 
+
+    gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+	
+	// play with these parameters
+	//ambient = vec4(0.0, 0.0, 0.0, 1.0);
+	
+	
+    fColor = ambient + diffuse +specular;
+	 
+    
+    fColor.a = 1.0;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+#ifdef GL_ES
+precision highp float;
+#endif
+
+
+varying vec4 fColor;
+
+void
+main()
+{
+    gl_FragColor = fColor;
+}
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="shadedCube.js"></script>
+<script type="text/javascript" src="mouseControl.js"></script>
+
+</head>
+
+<body>
+<canvas id="gl-canvas" width="512" height="512" style="border:2px solid #000000;">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+<h1>Shaded Cube</h1>
+	<div>
+		<p> The Phong illumination model is programmed in the vertex shader. 
+		Gouraud shading is applied over each triangle.	
+		</p>		 
+	</div>
+
+<div>
+Change the Material Properties (scale default values)<br>
+ambient 1%<input id="ambientSlider" type="range"
+ min=".001" max="1.0" step="0.1" value="1.0" />100%<br>
+
+diffuse 1%<input id="diffuseSlider" type="range"
+ min=".001" max="1.0" step="0.1" value="1.0" />100%<br>
+ 
+ specular 1%<input id="specularSlider" type="range"
+ min=".001" max="1.0" step="0.1" value="1.0" />100%
+ </div>
+			
+<div>
+Program Features:
+<ul>
+<li>Cube centered at origin with width 1</li>
+<li>Normals calculated from triangle faces</li>
+<li>Orthographic projection</li>
+<li>Modelview matrix constructed from LookAt()</li>
+<li>Light located at [2,2,2] (defined in js -- try changing!)</li>
+ 
+</ul>
+</div>
+
+
+
+
+</body>
+</html>

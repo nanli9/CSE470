@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!--Name: Nan Li-->
+<!--Email: nanli9@asu.edu-->
+<!--ASU ID: 1217668959-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+
+<title>HomeWork 1</title>
+   
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+// The vertex shader is called for each vertex in the vertex buffer 
+// The square vertices were sent to the GPU in the JS/webGL code
+// The square vertices are 2D coordinates (x, y)
+// check the line in the JS file with "vertexAttribPointer"
+attribute vec2 vPosition;
+
+uniform float theta;
+
+attribute vec3 vColor;
+varying vec4 color;
+varying vec4 pos;
+uniform vec4 offset;
+
+void main()
+{
+	float dd = 1.0;
+	float s = sin( dd*theta);
+    float c = cos( dd*theta);
+    
+    gl_PointSize = 10.0;
+
+    pos=vec4(vPosition,0,1)+offset;
+	// apply a rotation matrix to the input position
+	gl_Position.x =  c * pos.x - s * pos.y ;
+    gl_Position.y =  s * pos.x + c * pos.y ;
+
+	gl_Position.z = 0.0;
+    gl_Position.w = 1.0;
+
+    //change the red and green parameter according to vertex position using
+    //linear relation
+	color = vec4(vColor, 1.0);
+    //make sure the prototype has its origin color 
+    if(color.x>0.3||color.x<-0.3){
+        color.x = gl_Position.x * color.x;
+        color.y = gl_Position.y * color.y;
+    }
+}
+</script>
+
+
+<!-- Fragment shader written in GLSL  -->
+<!-- It is setting the color of the square  -->
+<!-- color defined by (Red, Green, Blue, 1.0)  -->
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+// must set precision
+precision mediump float;
+varying vec4 color;
+
+void main()
+{
+	
+    gl_FragColor = color;
+	
+}
+</script>
+
+<!-- Here are the js files used by this program  -->
+<!-- If the Common folder not in correct place, nothing will display  --> 
+<!-- The first three files are libraries and the last one is our program -->
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="hw1.js"></script>
+
+
+
+<!-- Inline CSS code to make the text prettier -->
+<style>
+body
+{
+    font-style: normal;
+    font-family: sans-serif;
+    color: #222;
+    padding: 0 1em;
+    line-height: 1.25em;
+}
+</style>
+</head>   
+
+<!-- Here is some text for the html document  -->
+<!-- Good practice: describe what the program does and any user interaction available -->
+<!-- The text can go anywhere on the page  -->
+
+<body>
+<h1> HomeWork 1</h1>
+
+<!-- Create the window for displaying the simple square with HTML5 canvas element  -->
+<!-- Specify the size in pixels -->
+<!-- A border helps when getting started learning computer graphics -->
+
+ <canvas id="gl-canvas" width="500" height="500" style="border:2px solid #000000;"> 
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+<!-- The canvas context is an object with properties and methods that you can use to render graphics inside the canvas element. The context can be 2d or webgl (3d).
+-->
+
+</body>
+</html>

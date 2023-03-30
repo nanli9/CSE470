@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<style>
+p {line-height: 20pt;}
+body {font-family:verdana; }
+</style> 
+</head>
+
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+attribute  vec4 vPosition;
+attribute  vec4 vColor;
+varying vec4 fColor;
+
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+
+void main() 
+{
+	gl_PointSize = 10.0;
+    gl_Position = projectionMatrix*modelViewMatrix*vPosition;
+    fColor = vColor;
+} 
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+#ifdef GL_ES
+precision highp float;
+#endif
+
+
+varying vec4 fColor;
+
+void
+main()
+{
+    gl_FragColor = fColor;
+}
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="perspective2.js"></script>
+
+<body>
+
+<h1> LookAt and Ortho Functions Demo</h1>
+
+<p> Input cube is one unit wide and centered at the origin.</p>
+
+<h3>LookAt input:</h3>
+<p> 
+<strong>At point </strong> is fixed as origin. &nbsp &nbsp &nbsp &nbsp 
+<strong>Up vector</strong> is fixed as [0, 0, 1]<br>
+<strong>Eye point </strong> is located on <strong>sphere</strong> around cube:  radius[sin(theta)cos(phi), 
+        &nbsp sin(theta)sin(phi), &nbsp cos(theta)]<br>
+
+<ul>
+<li>Theta moves the eye from north pole [0, 0, +] to south pole [0, 0, -]</li>
+<li>Phi moves the eye on a circle around the z-axis.</li>
+<li>Tricky: If theta = 0 then changing phi will not move eye. (Stuck at the north pole!) </li>
+</ul>
+</p>
+<p style="background-color: yellow";>
+<span id="reportAt"></span> 
+<span id="reportUp"></span> 
+<span id="reportEye"></span>
+<br>
+<span id="reportRadius"></span>
+<span id="reportTheta"></span>
+<span id="reportPhi"></span>
+<br>
+<span id="reportFOV"></span> 
+<span id="reportNF"></span> 
+<span id="reportAspect"</span> 
+</p>
+
+<p>
+Modify frustum near and far planes:&nbsp 
+zNear .01<input id="zNearSlider" type="range"
+ min=".01" max="3" step="0.1" value="0.3" />
+ 3
+&nbsp &nbsp 
+zFar 3<input id="zFarSlider" type="range"
+ min="3" max="10" step="3.0" value="3" />
+ 10
+<br>
+
+Modify frustum field of view angle (degrees) &nbsp &nbsp 
+fov 10<input id="fovSlider" type="range"
+ min="10" max="120" step="5" value="45" />
+ 120
+ <br>
+ 
+Modify aspect ratio of viewport&nbsp &nbsp &nbsp
+aspect 0.5<input id="aspectSlider" type="range"
+ min="0.5" max="2" step="0.1" value="1" />
+ 2
+ <br>
+
+Modify LookAt: &nbsp &nbsp
+		
+radius 0.05<input id="radiusSlider" type="range"
+ min="0.05" max="10" step="0.1" value="4" />
+ 10
+ <br>
+ Modify LookAt: &nbsp &nbsp &nbsp
+theta -180<input id="thetaSlider" type="range"
+ min="-180" max="180" step="5" value="0" />
+ 180
+ &nbsp &nbsp &nbsp
+phi -180<input id="phiSlider" type="range"
+ min="-180" max="180" step="5" value="0" />
+ 180 
+ <br>
+ 
+ 
+</p>
+
+
+<canvas id="gl-canvas" width="512" height="512" style="border:2px solid #000000;">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+</body>
+</html>

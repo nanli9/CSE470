@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<!-- Z-buffer hidden surface removal demo
+Dianne Hansford
+-->
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<title>Zbuffer Test</title>
+
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec3 vPosition;
+attribute vec3 vColor;
+varying vec4 color;
+
+void
+main()
+{
+    gl_Position = vec4(vPosition, 1.0);
+    color = vec4(vColor, 1.0);
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+   
+varying vec4 color;
+
+void
+main()
+{
+    gl_FragColor = color;
+}
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="zbufferTest.js"></script>
+
+
+<style>
+body
+{
+    font-style: normal;
+    font-family: sans-serif;
+    color: #222;
+    padding: 0 1em;
+    line-height: 1.25em;
+}
+</style>
+</head>   
+
+<body>
+<div>
+<h3> Z-buffer Hidden Surface Removal Demo</h3>
+
+<div>
+Set-up<br>
+-- The canvas plane corresponds to the xy-plane.<br>
+-- The red, green, and blue triangles are parallel to xy-plane.<br>
+-- The yellow triangle cuts through the z-space  <br>
+<br>
+In clip coordinates, the
+z-values range [-1,1], <br>where z = -1 is close and z = 1 is far from the viewer (you).
+</div>
+
+<br>
+<div>
+Click to toggle z-buffer on and off. &nbsp&nbsp
+<button type="button" id="zBufferButton">Z-buffer On</button>
+</div>
+
+
+<canvas id="gl-canvas" width="500" height="500" style="border:2px solid #FF0010;">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+
+<div>
+<strong> Try this:</strong>
+<ul>
+<li>Open the console to see print statements -- the exact z-coordinates.</li>
+<li>In js file, the vertices of the triangles can be moved. See the "points" array.</li>
+<li>With zBuffer off, change the drawing order.</li>
+<li>See js file for an example of using "constants" to access color indices</li>
+</ul>
+</div>
+
+
+</body>
+</html>
