@@ -154,10 +154,14 @@ Oops ... your browser doesn't support the HTML5 canvas element
 	<button id="animation">animation</button>
 </div>
 <div>
+	
 program description:
 <ul>
 <li>The light location is at eye(0,0,3) or (10,10,3)</li>
 <li>Change the surface type will reset the animation toggle and projection type to default(ortho)</li>
+<li>The init moveVector is a normalized random vec3, please refresh the page if you want to change the init moveVector</li>
+<li>The moveVector will change eveytime the surface hit the boundary of the box</li>
+<li id="moveVector">The current moveVector is .</li>
 </ul>
 </div>
 </body>

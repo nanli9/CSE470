@@ -25,11 +25,11 @@ function drawTorus(){
 }
 function drawCylinder(){
     u_step=2*pi/10;
-    v_step=0.5/10;
+    v_step=0.4/10;
     x_slices = (2*pi)/u_step+1;
-    y_slices = (0.5)/v_step+1;
+    y_slices = (0.4)/v_step+1;
     for(var u=0;u<=2*pi;u=u+u_step){
-        for(var v=0;v<=0.5;v=v+v_step){
+        for(var v=0;v<=0.4;v=v+v_step){
             /*
             var r = 2;
             //var points=vec3(r*Math.cos(u)*Math.sin(v),r*Math.sin(u)*Math.sin(v),r*Math.cos(v));

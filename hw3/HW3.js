@@ -44,6 +44,7 @@ var near = 0.01;
 var farFactor = 3.0;
 var far = viewer.radius * farFactor;
 
+var n;
 var x_min = -0.7;
 var x_max = 0.7;
 var y_min = -0.7;
@@ -153,8 +154,7 @@ window.onload = function init() {
     
     moveVector = normalize(vec3(Math.random(),Math.random(),Math.random()));
     console.log("moveVector", moveVector);
-
-    
+    document.getElementById("moveVector").innerHTML = "The current moveVector is ("+ moveVector +")";
     var surfacesType = document.getElementById("surfaceSelector").value;
     if(surfacesType=="cylinder"){
         drawCylinder();
@@ -325,19 +325,35 @@ function render() {
         pos[2] += speed*moveVector[2];
         modelViewMatrix = mult(modelViewMatrix,translate(pos[0],pos[1],pos[2]));
     }
-
-    if(pos[0]>x_max||pos[0]<x_min){
-        moveVector = normalize(vec3(-moveVector[0],moveVector[1],moveVector[2]));
+    //have reflective vectors
+    if(pos[0]<=x_min){
+        n = vec3(1,0,0);
+        moveVector = normalize(subtract(moveVector,scale(2*dot(moveVector,n),n)));    
+    }
+    else if(pos[0]>=x_max){
+        n = vec3(-1,0,0);
+        moveVector = normalize(subtract(moveVector,scale(2*dot(moveVector,n),n)));
+     
+    }
+    if(pos[1]<=y_min){
+        n = vec3(0,1,0);
+        moveVector = normalize(subtract(moveVector,scale(2*dot(moveVector,n),n)));
+     
+    }
+    else if(pos[1]>=y_max){
+        n = vec3(0,-1,0);
+        moveVector = normalize(subtract(moveVector,scale(2*dot(moveVector,n),n)));
+    }
+    if(pos[2]<=z_min){
+        n = vec3(0,0,1);
+        moveVector = normalize(subtract(moveVector,scale(2*dot(moveVector,n),n)));   
+    }
+    else if(pos[2]>=z_max){
+        n = vec3(0,0,-1);
+        moveVector = normalize(subtract(moveVector,scale(2*dot(moveVector,n),n)));
         
     }
-    else if(pos[1]>y_max||pos[1]<y_min){
-        moveVector = normalize(vec3(moveVector[0],-moveVector[1],moveVector[2]));
-        
-    }
-    else if(pos[2]<z_min||pos[2]>z_max){
-        moveVector = normalize(vec3(moveVector[0],moveVector[1],-moveVector[2]));
-        
-    }
+    document.getElementById("moveVector").innerHTML = "The current moveVector is ("+ moveVector +")";
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
           
     //for( var i=0; i<numVertices; i=i+3) 
