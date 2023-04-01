@@ -1,4 +1,4 @@
-
+ 
 
 var canvas;
 var gl;
@@ -32,7 +32,7 @@ var stepsize = 0.005;
 var pos=vec3(0,0,0);
 var moveVector = normalize(vec3(Math.random(),Math.random(),Math.random()));;
 var speed = 0.005;
-
+var scale_x,scale_y,scale_z;
 var animationToggle=false;
 
 var pi=3.14;
@@ -307,6 +307,7 @@ window.onload = function init() {
     if(animation){
         window.cancelAnimationFrame(animation);
     }
+    console.log(scalem(2,1,0.5));
     render();
 }
 
@@ -337,10 +338,15 @@ function render() {
         gl.drawArrays( gl.LINES, i+2, 2 );
         gl.drawArrays( gl.LINES, i+3, 2 );
     }
-
-    if(kft>1){
+    if(kft==0){
+        kft+=stepsize;
+        modelViewMatrix = mult(modelViewMatrix,translate(pos[0],pos[1],pos[2]));
+        modelViewMatrix = mult(modelViewMatrix,scaleMatrix);
+    }
+    else if(kft>1){
         kft=0;
         modelViewMatrix = mult(modelViewMatrix,translate(pos[0],pos[1],pos[2]));
+        scaleMatrix=scalem(scale_x,scale_y,scale_z);
         modelViewMatrix = mult(modelViewMatrix,scaleMatrix);
     }
     else{
@@ -349,15 +355,13 @@ function render() {
         pos[1] += speed*moveVector[1];
         pos[2] += speed*moveVector[2];
         modelViewMatrix = mult(modelViewMatrix,translate(pos[0],pos[1],pos[2]));
+        scale_x=1-pos[0];
+        scale_y=1-pos[1];
+        scale_z=1-pos[2];
+        scaleMatrix=scalem((1-kft)*scaleMatrix[0][0]+scale_x*kft,(1-kft)*scaleMatrix[1][1]+scale_y*kft,(1-kft)*scaleMatrix[2][2]+scale_z*kft);
         modelViewMatrix = mult(modelViewMatrix,scaleMatrix);
     }
 
-    if(pos[1]-pos[0]<=0.1){
-        scaleMatrix=scalem(0.6,0.5,2);
-    }
-    else{
-        scaleMatrix=mat4();
-    }
     //have reflective vectors
     if(pos[0]<=x_min){
         n = vec3(1,0,0);
