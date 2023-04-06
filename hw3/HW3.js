@@ -166,9 +166,9 @@ window.onload = function init() {
     console.log("moveVector", moveVector);
     document.getElementById("moveVector").innerHTML = "The current moveVector is ("+ moveVector +")";
     var surfacesType = document.getElementById("surfaceSelector").value;
-    if(surfacesType=="cylinder"){
-        drawCylinder();
-        console.log("drawCylinder");
+    if(surfacesType=="cone"){
+        drawCone();
+        console.log("drawCone");
     }
     else if(surfacesType=="torus"){
         drawTorus();
@@ -180,10 +180,12 @@ window.onload = function init() {
     if(lightLoc=="eye"){
         lightPosition = vec4(0.0, 0.0, 3.0, 1.0 );
         pointsArray.push(vec3(0.0, 0.0, 3.0));
+        normalsArray.push(vec3(0,0,0));
     }
     else if(lightLoc=="otherPos"){
         lightPosition = vec4(-0.7, -0.7, 2.0, 1.0 );
         pointsArray.push(vec3(-0.7, -0.7, 2.0));
+        normalsArray.push(vec3(0,0,0));
     }
 
     var nBuffer = gl.createBuffer();
