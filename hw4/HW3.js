@@ -11,6 +11,7 @@ var pointsArray = [];
 var normalsArray = [];
 var indexPoints=[];
 var indexNormals=[];
+var texCoordsArray = [];
 // eye location and parameters to move
 var viewer = 
 {
