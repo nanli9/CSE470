@@ -128,27 +128,27 @@ function quad(a, b, c, d) {
 
      pointsArray.push(vertices[a]); 
      colorsArray.push(vertexColors[a]); 
-     texCoordsArray.push(texCoord[0]);
+     texCoordsArray.push(texCoord2[0]);
 
      pointsArray.push(vertices[b]); 
      colorsArray.push(vertexColors[a]);
-     texCoordsArray.push(texCoord[1]); 
+     texCoordsArray.push(texCoord2[1]); 
 
      pointsArray.push(vertices[c]); 
      colorsArray.push(vertexColors[a]);
-     texCoordsArray.push(texCoord[2]); 
+     texCoordsArray.push(texCoord2[2]); 
     
      pointsArray.push(vertices[a]); 
      colorsArray.push(vertexColors[a]);
-     texCoordsArray.push(texCoord[0]); 
+     texCoordsArray.push(texCoord2[0]); 
 
      pointsArray.push(vertices[c]); 
      colorsArray.push(vertexColors[a]);
-     texCoordsArray.push(texCoord[2]); 
+     texCoordsArray.push(texCoord2[2]); 
 
      pointsArray.push(vertices[d]); 
      colorsArray.push(vertexColors[a]);
-     texCoordsArray.push(texCoord[3]); 
+     texCoordsArray.push(texCoord2[3]); 
 }
 
 

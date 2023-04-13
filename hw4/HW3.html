@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {font-family:verdana; line-height:150%;}
+</style>
+
+
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+attribute vec2 vTexCoord;
+attribute vec3 vPosition;
+attribute vec3 vNormal;
+
+
+uniform vec4 normal;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform vec4 lightPosition;
+uniform mat4 normalMatrix;
+uniform mat3 normalMatrix_Plane;
+uniform vec3 objTangent;
+
+varying vec3 N;
+varying vec3 L;
+varying vec3 E;
+uniform int colorFlag;
+uniform int objectFlag;
+
+varying vec2 fTexCoord;
+varying vec3 l; /* light vector in texture-space coordinates */
+varying vec3 v; /* view vector in texture-space coordinates */
+varying vec3 n;
+varying vec3 b;
+varying vec3 t;
+
+void main()
+{
+	
+	if(objectFlag == 0){
+		gl_PointSize = 10.0;
+
+		// make inputs 4d to match 4x4 transformation matrix
+		vec4 pos4D = vec4(vPosition, 1.0);
+		vec4 nor4D = vec4(vNormal, 0.0); 
+		
+		// map position into eye coordinates
+		vec3 pos = (modelViewMatrix * pos4D).xyz;
+		
+		// light defined  in eye coordinates
+		vec3 light = lightPosition.xyz;
+		
+		// light vector
+		L = normalize( light - pos );
+		
+		// eye in eye coordinates
+		vec3 eyePoint = vec3(0.0, 0.0, 0.0);
+		
+		// view vector
+		// this was an error - redeclaring E, so not varying
+		E = normalize( eyePoint - pos );
+	
+	// map normal into eye coordinates
+	// normal matrix should not be needed here bc it is a rotation and translation (rigid body)
+		N = normalize( (normalMatrix * nor4D).xyz); 
+		
+		// output point in clip coordinates
+		gl_Position = projectionMatrix * modelViewMatrix * pos4D;
+	}
+	else{
+		gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition,1);
+		
+		fTexCoord = vTexCoord;
+
+		// map vertex and light to eye coordinates
+		vec3 eyePosition = (modelViewMatrix*vec4(vPosition,1)).xyz;
+		vec3 eyeLightPos = (modelViewMatrix*lightPosition).xyz;
+
+	/* normal, tangent and binormal in eye coordinates */
+	/* create an orthonormal frame */
+
+		n = normalize(normalMatrix_Plane*normal.xyz);
+		t  = normalize(normalMatrix_Plane*objTangent);
+		b = cross(n, t);
+
+		/* light vector in texture space */
+		/* Let M be matrix rows T^T, B^T, N^T then M.light_vector = light in texture space */
+
+		/*
+		l.x = dot(t, eyeLightPos-eyePosition);
+		l.y = dot(b, eyeLightPos-eyePosition);
+		l.z = dot(n, eyeLightPos-eyePosition);
+		*/
+		l = eyeLightPos-eyePosition;
+
+		l = normalize(l);
+
+		/* view vector (origin - vertex) in texture space */
+		/*
+		v.x = dot(t, -eyePosition);
+		v.y = dot(b, -eyePosition);
+		v.z = dot(n, -eyePosition);
+		*/
+		// origin - vertex
+		v = -eyePosition;
+
+		v = normalize(v);
+	}
+    
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+/* 
+Fun to try -- see shadedsphere2_Play
+*/
+
+precision mediump float;
+
+uniform vec4 ambientProduct;
+uniform vec4 diffuseProduct;
+uniform vec4 specularProduct;
+uniform float shininess;
+uniform int colorFlag;
+uniform int objectColorFlag;
+uniform vec4 diffuseProduct_Plane;
+uniform sampler2D texMap;
+varying vec3 N;
+varying vec3 L;
+varying vec3 E;
+
+varying vec2 fTexCoord;
+varying vec3 l;
+varying vec3 v;
+varying vec3 n;
+varying vec3 b;
+varying vec3 t;
+
+void main()
+{    
+    vec4 fColor;
+	
+	// normalize the input vectors that have been
+	// interpolated across the triangle
+	if(objectColorFlag == 0){
+		if(colorFlag == 1) {
+			vec3 unitN = normalize(N);
+			vec3 unitL = normalize(L);
+			vec3 unitE = normalize(E);
+			
+			// halfway vector (instead of reflection vector)
+			vec3 H = normalize( unitL + unitE );
+			
+			vec4 ambient = ambientProduct;
+
+			// diffuse attenuation (Lambert's law)
+			float LNdotProduct = dot(unitL, unitN);
+			float Kd = max( LNdotProduct, 0.0 );
+			vec4  diffuse = Kd*diffuseProduct;
+
+			// specular attenuation
+			float Ks = pow( max(dot(unitN, H), 0.0), shininess );
+			vec4  specular = Ks * specularProduct;
+			
+			// turn off specular if there is no diffuse
+			
+			if( LNdotProduct < 0.0 ) 
+				specular = vec4(0.0, 0.0, 0.0, 1.0);
+				
+			// create working color 
+			// so we can play before loading into fColor
+			vec4 finalColor = ambient + diffuse + specular;
+			
+			fColor = finalColor;
+			fColor.a = 1.0;
+		}
+		else {	
+			fColor = vec4(1.0, 0.0, 0.0, 1.0);
+		}
+		gl_FragColor = fColor;
+	}
+	else{
+		vec4 Nmap = texture2D(texMap, fTexCoord);
+   
+		// get normal out of texture definition
+		// scale and translate components from [0,1] to [-1,1]
+		vec3 NN =  normalize(2.0*Nmap.xyz-1.0);
+		
+		vec3 TT = normalize(t);
+		vec3 BB = normalize(b);
+		vec3 NNN = normalize(n);
+		
+		vec3 No;
+		No.x = TT.x * NN.x + BB.x * NN.y + NNN.x * NN.z;
+		No.y = TT.y * NN.x + BB.y * NN.y + NNN.y * NN.z;
+		No.z = TT.z * NN.x + BB.z * NN.y + NNN.z * NN.z;
+			
+		vec3 LL = normalize(l);
+		float Kd = max(dot(No, LL), 0.0);
+		
+		vec4 ambient = vec4(0.05, 0.05, 0.05, 1.0);
+		
+		// DCH added a little ambient
+		gl_FragColor = vec4(Kd*diffuseProduct_Plane.xyz, 1.0) + ambient;
+	}    
+}
+</script>
+
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="HW3.js"></script>
+<script type="text/javascript" src="mouseControl.js"></script>
+<script type="text/javascript" src="createSurface.js"></script>
+</head>
+
+<body>
+
+<canvas id="gl-canvas" width="512" height="512" style="border:2px solid #000000;">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+<h1>HW 3 Floating Surfaces</h1>
+<div>
+	<P>Name: Nan Li; Email: nanli9@asu.edu; ASU ID: 1217668959</P>
+</div>
+<div>
+	<h3>Select the dorpdown to select the properties of program</h3>
+	<select id="materialSelector">
+		<option value="emerald">emerald</option>
+		<option value="jade">jade</option>
+	</select>
+	<select id="lightLocSelector">
+		<option value="eye">eye(0,0,3)</option>
+		<option value="otherPos">(-0.7,-0.7,2.0)</option>
+	</select>
+</div>
+<div>
+	<h3>Press the button to select the perspective or Orthographic</h3>
+	<button id="ortho">ortho</button>
+	<button id="perspective">perspective</button>
+	<button id="animation">animation</button>
+</div>
+<div>
+	
+program description:
+<ul>
+<li>The init moveVector is a normalized random vec3, please refresh the page if you want to change the init moveVector</li>
+<li>The moveVector will change eveytime the surface hit the boundary of the box</li>
+<li id="moveVector">The current moveVector is .</li>
+<li>The light location is at eye(0,0,3) or (-0.7,-0.7, 2.0). The red point represent the light source</li>
+<li>Change the surface type and light position will reset the animation toggle and projection type to default(ortho) and set surface to the origin</li>
+<li>emerald info: 
+	emeraldAmbient = 0.0215,0.1745,0.0215,
+	emeraldDiffuse = 0.07568, 0.61424, 0.07568,
+	emeraldSpecular = 0.633, 0.727811, 0.633,
+	emeraldShininess = 0.6</li>
+<li>jade info: 
+	jadeAmbient = 0.135,0.2225,0.1575,
+	jadeDiffuse = 0.54, 0.89, 0.63,
+	jadeSpecular =  0.316228, 0.316228, 0.316228,
+	jadeShininess = 0.1
+</li>
+<li>please drag around when select cone to see the color.</li>
+</ul>
+</div>
+</body>
+</html>
