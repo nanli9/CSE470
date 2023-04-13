@@ -34,6 +34,11 @@ var moveVector = vec3(0,0,-1)
 var speed = 0.0;
 var scale_x,scale_y,scale_z;
 var animationToggle=false;
+var jumpHeight = 0.4;
+var hit = false;
+var hitCounter = 0;
+var numHit = 3;
+
 
 var pi=3.14;
 // ortho box
@@ -288,7 +293,12 @@ window.onload = function init() {
     render();
 }
 
-    
+function goUp(height){
+
+}   
+function goDown(){
+
+} 
 
 function render() {
     
