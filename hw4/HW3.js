@@ -112,16 +112,22 @@ var planePoints=[
 ]
 function quad(a,b,c,d){
     pointsArray.push(planePoints[a]); 
-     
+    normalsArray.push(vec3(0,0,0));
+
     pointsArray.push(planePoints[b]); 
-     
-    pointsArray.push(planePoints[c]); 
-   
-    pointsArray.push(planePoints[a]); 
+    normalsArray.push(vec3(0,0,0));
 
     pointsArray.push(planePoints[c]); 
+    normalsArray.push(vec3(0,0,0));
+
+    pointsArray.push(planePoints[a]); 
+    normalsArray.push(vec3(0,0,0));
+
+    pointsArray.push(planePoints[c]); 
+    normalsArray.push(vec3(0,0,0));
 
     pointsArray.push(planePoints[d]);
+    normalsArray.push(vec3(0,0,0));
 }
 function drawPlane(){
     quad( 1, 0, 3, 2 );
