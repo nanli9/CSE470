@@ -169,7 +169,7 @@ window.onload = function init() {
     
 	// This is another option. See the HTML code for img tag 
     //var image = document.getElementById("texImage");
-    //configureTexture( image );
+    //=configureTexture( image );
 
     thetaLoc = gl.getUniformLocation(program, "theta"); 
     

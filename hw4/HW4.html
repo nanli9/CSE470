@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {font-family:verdana; line-height:150%;}
+</style>
+
+
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+attribute vec2 vTexCoord;
+attribute vec3 vPosition;
+attribute vec3 normal;
+attribute vec3 objTangent; 
+
+/* light position in object coordinates */
+uniform vec4 lightPosition;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform mat3 normalMatrix;
+uniform int planeFlag; 
+
+varying vec2 fTexCoord;
+varying vec3 L; /* light vector in texture-space coordinates */
+varying vec3 V; /* view vector in texture-space coordinates */
+varying vec3 N;
+varying vec3 B;
+varying vec3 T;
+	
+
+void main()
+{
+	
+	if(planeFlag == 0){
+		gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition,1);
+
+		fTexCoord = vTexCoord;
+
+		// map vertex and light to eye coordinates
+		vec3 eyePosition = (modelViewMatrix*vec4(vPosition,1)).xyz;
+		vec3 eyeLightPos = (modelViewMatrix*lightPosition).xyz;
+	
+	   /* normal, tangent and binormal in eye coordinates */
+	   /* create an orthonormal frame */
+	
+		N = normalize(normalMatrix*normal.xyz);
+		T  = normalize(normalMatrix*objTangent);
+		B = cross(N, T);
+	
+		/* light vector in texture space */
+		/* Let M be matrix rows T^T, B^T, N^T then M.light_vector = light in texture space */
+		L = eyeLightPos-eyePosition;
+		L = normalize(L);
+
+		V = -eyePosition;
+	
+		V = normalize(V);
+			
+	}
+	else{
+		fTexCoord = vTexCoord;
+		gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition,1);
+		
+	}
+    
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+/* 
+Fun to try -- see shadedsphere2_Play
+*/
+
+precision mediump float;
+
+
+varying vec2 fTexCoord;
+varying vec3 L;
+varying vec3 V;
+varying vec3 N;
+varying vec3 B;
+varying vec3 T;
+
+uniform sampler2D texMap;
+uniform sampler2D texture;
+uniform vec4 diffuseProduct;
+uniform int planeColorFlag;
+
+
+void main()
+{    
+    
+	// normalize the input vectors that have been
+	// interpolated across the triangle
+	if(planeColorFlag == 1){
+		gl_FragColor = texture2D( texture, fTexCoord );
+	}
+	else{
+		vec4 Nmap = texture2D(texMap, fTexCoord);
+   
+		// get normal out of texture definition
+		// scale and translate components from [0,1] to [-1,1]
+		vec3 NN =  normalize(2.0*Nmap.xyz-1.0);
+		
+		vec3 TT = normalize(T);
+		vec3 BB = normalize(B);
+		vec3 NNN = normalize(N);
+		
+		vec3 No;
+		No.x = TT.x * NN.x + BB.x * NN.y + NNN.x * NN.z;
+		No.y = TT.y * NN.x + BB.y * NN.y + NNN.y * NN.z;
+		No.z = TT.z * NN.x + BB.z * NN.y + NNN.z * NN.z;
+			
+		vec3 LL = normalize(L);
+		float Kd = max(dot(No, LL), 0.0);
+		
+		vec4 ambient = vec4(0.05, 0.05, 0.05, 1.0);
+		
+		// DCH added a little ambient
+		gl_FragColor = vec4(Kd*diffuseProduct.xyz, 1.0) + ambient;
+		//gl_FragColor = vec4(1.0,1.0,0.0,1.0);
+	}    
+}
+</script>
+
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="HW4.js"></script>
+<script type="text/javascript" src="mouseControl.js"></script>
+<script type="text/javascript" src="createSurface.js"></script>
+<script type="text/javascript" src="matrixMethods.js"></script>
+<script type="text/javascript" src="Cartoon_green_texture_grass.jpg.js"></script>
+</head>
+
+<body>
+
+<canvas id="gl-canvas" width="512" height="512" style="border:2px solid #000000;">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+<h1>HW 4 Texture it!</h1>
+<div>
+	<P>Name: Nan Li; Email: nanli9@asu.edu; ASU ID: 1217668959</P>
+</div>
+
+<div>
+	<button id="animation">animation</button>
+</div>
+<div>
+program description:
+<ul>
+
+</ul>
+</div>
+</body>
+</html>

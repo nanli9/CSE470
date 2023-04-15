@@ -118,6 +118,8 @@ window.onload = function init() {
 	createBumpMapRectangle();
 	//createBumpMapSinCos();
 	configureTexture(bumpNormals);
+    console.log(bumpNormals);
+    console.log(pointsArray);
 
     var vBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);

@@ -49,21 +49,12 @@ void main()
     /* light vector in texture space */
 	/* Let M be matrix rows T^T, B^T, N^T then M.light_vector = light in texture space */
 
-	/*
-    L.x = dot(T, eyeLightPos-eyePosition);
-    L.y = dot(B, eyeLightPos-eyePosition);
-    L.z = dot(N, eyeLightPos-eyePosition);
-	*/
+	
 	L = eyeLightPos-eyePosition;
 
     L = normalize(L);
 
-    /* view vector (origin - vertex) in texture space */
-	/*
-    V.x = dot(T, -eyePosition);
-    V.y = dot(B, -eyePosition);
-    V.z = dot(N, -eyePosition);
-	*/
+    
 	// origin - vertex
 	V = -eyePosition;
 
@@ -118,7 +109,7 @@ void main()
 <script type="text/javascript" src="../Common/InitShaders.js"></script>
 <script type="text/javascript" src="../Common/MV.js"></script>
 <script type="text/javascript" src="bumpMap.js"></script>
-<script type="text/javascript" src="matrixMethods.js"></script>
+//<script type="text/javascript" src="matrixMethods.js"></script>
 <script type="text/javascript" src="bumpData_rectangle.js"></script>
 <script type="text/javascript" src="bumpData_sincos.js"></script>
 
