@@ -28,18 +28,18 @@ var viewer =
 };
 
 //animation var
-var animation;
 var kft = 0.0;
 var stepsize = 0.005;
-var pos=vec3(0,0,0);
-var moveVector = vec3(0,0,-1)
+var pos=vec3(0,0.5,0);
+var moveVector = vec3(0,-1,0)
 var speed = 0.0;
 var scale_x,scale_y,scale_z;
 var animationToggle=false;
-var jumpHeight = 0.4;
+var jumpHeight = 0.3;
 var hit = false;
 var hitCounter = 0;
 var numHit = 3;
+var audio = new Audio('Audio.mp3');
 
 
 var pi=3.14;
@@ -212,9 +212,9 @@ window.onload = function init() {
     
     drawPlane();
 
-    mesh();
+    //mesh();
     
-
+    
     modelViewMatrix = lookAt(viewer.eye, viewer.at, viewer.up);
 
     normalMatrix = normalMatrixMat3(modelViewMatrix);
@@ -275,24 +275,25 @@ window.onload = function init() {
     // define mouse event listeners
 	mouseControls();
     
-	
     document.getElementById("animation").onclick = function(){
         console.log("toggle animation");
         if(animationToggle){
             animationToggle=false;
-            speed = 0.005;
+            speed = 0.0;
+            audio.pause();
         }
         else{
             animationToggle=true;
-            speed = 0.00;
+            speed = 0.005;
+            audio.play();
         }
         
         
     };
-   
-	
     
-   
+    
+
+	
     var image = new Image();
 	image.crossOrigin = "anonymous";
 	image.src = window.Cartoon_green_texture_grass_data_url;
@@ -303,15 +304,46 @@ window.onload = function init() {
     createBumpMapSinCos();
 	configureTextureObject(bumpNormals);
     console.log(tangentArray);
+
+    
     
     render();
 }
 
-function goUp(height){
-
-}   
-function goDown(){
-
+function jump(){
+    if(kft==0){
+        kft+=stepsize;
+        //modelViewMatrix = mult(modelViewMatrix,translate(0.5,0.5,0.5));
+    }
+    else if(kft>=1){
+        kft=0;
+        //modelViewMatrix = mult(modelViewMatrix,translate(pos[0],pos[1],pos[2]));
+    }
+    else{
+        kft+=stepsize;
+        hit=false;
+        pos[0] += speed*moveVector[0];
+        pos[1] += speed*moveVector[1];
+        pos[2] += speed*moveVector[2];
+        if(pos[1]<=-0.25){
+            hit=true;
+            hitCounter += 1;
+            moveVector = vec3(0,1,0);
+            //console.log(jumpHeight);
+            jumpHeight -= 0.1;
+        }
+        if(pos[1]>=jumpHeight){
+            moveVector = vec3(0,-1,0);
+        }
+        if(hitCounter>=4){
+            moveVector = vec3(0,0,0);
+        }
+    
+    }
+    //
+    
+    modelViewMatrix = mult(modelViewMatrix,translate(pos[0],pos[1],pos[2]));
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 } 
 
 function render() {
@@ -324,7 +356,6 @@ function render() {
     gl.uniform1i(gl.getUniformLocation(program,"planeColorFlag"), 1);
     gl.uniform1i(gl.getUniformLocation(program,"planeFlag"), 1);
     gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
-
     gl.drawArrays( gl.TRIANGLES, 121, 36 );
    
 
@@ -334,6 +365,7 @@ function render() {
     
     gl.uniform1i(gl.getUniformLocation(program, "texMap"), 1);
     
+    jump();
     
     gl.drawElements( gl.TRIANGLES, numVertices, gl.UNSIGNED_SHORT, 0 );
 
